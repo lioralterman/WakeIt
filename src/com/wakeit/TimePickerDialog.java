@@ -249,6 +249,7 @@ public final class TimePickerDialog extends AlertDialog {
      * @param defaultIncrement
      */
     public void inflate(View parentView, int resourceId, boolean showIncrement, IncrementValue defaultIncrement) {
+    	showIncrement = false;
       final ViewStub stub = (ViewStub) parentView.findViewById(resourceId);
       final View view = stub.inflate();
       text = (EditText) view.findViewById(R.id.time_value);
@@ -268,7 +269,7 @@ public final class TimePickerDialog extends AlertDialog {
           pickerRefresh();
         }
       });
-
+      
       if (showIncrement) {
         incrementValueButton.setVisibility(View.VISIBLE);
       } else {
