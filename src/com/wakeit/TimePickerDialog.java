@@ -343,7 +343,7 @@ public final class TimePickerDialog extends AlertDialog {
         int currentValue = calendar.get(calendarField);
         int remainder = currentValue % increment.value();
         if (remainder == 0) {
-          calendar.roll(calendarField, sign() * increment.value());
+          calendar.roll(calendarField, sign());
         } else {
           int difference;
           if (sign() > 0) {
