@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: C:\\xampp\\htdocs\\WakeIt\\src\\com\\wakeit\\AlarmClockInterface.aidl
+ * Original file: C:\\Users\\Ido\\git\\WakeIt\\src\\com\\wakeit\\AlarmClockInterface.aidl
  */
 package com.wakeit;
 public interface AlarmClockInterface extends android.os.IInterface
