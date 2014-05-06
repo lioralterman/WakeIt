@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: C:\\Users\\Ido\\git\\WakeIt\\src\\com\\wakeit\\NotificationServiceInterface.aidl
+ * Original file: C:\\xampp\\htdocs\\WakeIt\\src\\com\\wakeit\\NotificationServiceInterface.aidl
  */
 package com.wakeit;
 public interface NotificationServiceInterface extends android.os.IInterface
