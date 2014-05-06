@@ -79,7 +79,7 @@ public final class ActivityAlarmNotification extends Activity {
     // Make sure this window always shows over the lock screen.
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
     tf = Typeface.createFromAsset(getAssets(),"fonts/DS-DIGI.TTF");
-    tf1 = Typeface.createFromAsset(getAssets(),"fonts/Roboto-Light.ttf");
+    tf1 = Typeface.createFromAsset(getAssets(),"fonts/OstrichSans-Bold.otf");
     db = new DbAccessor(getApplicationContext());
     
     Button terBtn = (Button) findViewById(R.id.terminator);
