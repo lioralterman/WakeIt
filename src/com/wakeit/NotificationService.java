@@ -521,6 +521,7 @@ public class NotificationService extends Service implements SensorEventListener{
     			clock_text_g = "You went back to sleep didn't you?";
     			clockFlag = true;
     			counterTotal = 0;
+    			counter = 0;
     			this.idx=0;//?yishai update
     		}
 
