@@ -1,7 +1,2 @@
-/bin
-/gen
-
-bin/resources.ap_
-bin/classes.dex
-bin/WakeIt.apk
-bin/WakeIt.apk
+bin/
+gen/
