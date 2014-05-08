@@ -17,6 +17,7 @@ package com.wakeit;
 
 import java.util.LinkedList;
 
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -67,10 +68,13 @@ public class NotificationService extends Service implements SensorEventListener{
   private float last_x, last_y, last_z, speed;
   private static final int SHAKE_THRESHOLD = 30;
   int counter=0;
-  boolean clockFlag = true;
+  boolean sleepFlag = true;
+  boolean toWork=false;
   public static int counterTotal=0;
   public static String clock_text_g="Wake Up";
   private float start;
+  private int idx=0;
+  private int jdx=0;
   
   
   final public static int timeToShake = 60;// how much time until the subject is fully awake. in sex.
@@ -303,6 +307,7 @@ public class NotificationService extends Service implements SensorEventListener{
 
   private void handleStart(Intent intent, int startId) {
     // startService called from alarm receiver with an alarm id url.
+	  toWork=true;
     if (intent != null && intent.getData() != null) {
       long alarmId = AlarmUtil.alarmUriToId(intent.getData());
       try {
@@ -416,41 +421,40 @@ public class NotificationService extends Service implements SensorEventListener{
           long curTime = System.currentTimeMillis();
           
           // only allow one update every 100ms.
-              long diffTime = (curTime - lastUpdate);
-              lastUpdate = curTime;
+          long diffTime = (curTime - lastUpdate);
+          lastUpdate = curTime;
 
-              speed = Math.abs(x+y+z - last_x - last_y - last_z)/ diffTime * 10000;
+          speed = Math.abs(x+y+z - last_x - last_y - last_z)/ diffTime * 10000;
 
-              if (speed > SHAKE_THRESHOLD) {
-              	counterUpdate = curTime;
+          if (speed > SHAKE_THRESHOLD) {
+          	counterUpdate = curTime;
                  // Toast.makeText(this, "shake detected w/ speed: " + speed, Toast.LENGTH_SHORT).show();
                   //getRandomNumber();
-              }
-              last_x = x;
-              last_y = y;
-              last_z = z;
+          }
+          last_x = x;
+          last_y = y;
+          last_z = z;
               
-              
-              
-         if(clockFlag){
-      	      if(speed >= SHAKE_THRESHOLD){
-      	    	  //we are awake
-      	    	  start=0;//volume is zero
-      	    	  clockFlag = false;
-      	    	MediaSingleton.INSTANCE.setVolume(start);//update sound
-      	      }
-          	}
-          	
-          	else{
-          		//we believe to be awake
-          		if(speed >= SHAKE_THRESHOLD){
-        	    	  counter = 0;
-        	    	  //check awake status
-        	    	  //counter==0  ->we are awake 
-        	    	  
-        	      	}
-          		//counter ==x-> we have not moved for x secs
-          	}   
+          
+          if(toWork){
+          //here should be the logic to do when shake is off     
+         if(speed>=SHAKE_THRESHOLD){
+        	 if(sleepFlag){//we slept
+        		 //Toast.makeText(getApplicationContext(), "we waked up in onSensor", Toast.LENGTH_SHORT).show();
+        		 sleepFlag=false;// we are belived to wake up
+        		 counter=0;
+        		 start=0;//set ring off 
+        	 }
+        	 else{// we were awake
+        		 //Toast.makeText(getApplicationContext(), "we were wake in onSensor", Toast.LENGTH_SHORT).show();
+        		 counter=0;//move to next counting stage
+        		 this.idx++;//move to next counting stage
+        		 Toast.makeText(getApplicationContext(), "stage is now = "+(checkInterval+idx), Toast.LENGTH_SHORT).show();
+        	 }
+        		 
+        	 MediaSingleton.INSTANCE.setVolume(start);//update sound
+         }
+          }//toWork end     
       }
   }
 
@@ -468,8 +472,6 @@ public class NotificationService extends Service implements SensorEventListener{
   private final class VolumeIncreaser implements Runnable {
     float end;
     float increment;
-    private int idx=0;
-    private int jdx=0;
 
     public float volume() {
       return start;
@@ -486,53 +488,61 @@ public class NotificationService extends Service implements SensorEventListener{
     @Override
     public void run() {
     	
-    	if(clockFlag){
-    		counterTotal = 0;
-    		if(this.idx==0){
-    			jdx++;
+    	if(toWork){
+    	//here should be the logic to do when shake is off
+    	if(sleepFlag){
+    		//Toast.makeText(getApplicationContext(), "we are asleep at run", Toast.LENGTH_SHORT);
+    		counterTotal = 0;//get back to start
+    		
+    		if(idx==0){
+    			jdx++;//should increase startVol
+    			
     			AlarmSettings settings=null;
 				try {
 					settings = db.readAlarmSettings(currentAlarmId());
 				} catch (NoAlarmsException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
     			reset(settings);
     		}
+    		
 	      start += increment;//we are asleep -> so we should increase volume
-	      
 	      
 	      if (start > end) {
 	        start = end;// don't reach too high volume
 	      }
 	     
-	      
 	      MediaSingleton.INSTANCE.setVolume(start);//update sound
     	}
     	
+    	
     	else{
-    		//we believe to be awake
+    		//Toast.makeText(getApplicationContext(), "we are awake at run", Toast.LENGTH_SHORT).show();
+    		//we are believe to be awake
     		counter++;//adds sec
     		counterTotal++;//adds sec
 
     		//counter ==x-> we have not moved for x secs
-    		if(counter == checkInterval){
+    		if(counter == checkInterval+idx){//should be a recursive sum
+    			//Toast.makeText(getApplicationContext(), "we have not moved for "+(checkInterval+idx)+ " at run", Toast.LENGTH_SHORT).show();
     			//if we have not moved for checkIntreval Secs we should restart the counting
     			clock_text_g = "You went back to sleep didn't you?";
-    			clockFlag = true;
+    			sleepFlag = true;
     			counterTotal = 0;
     			counter = 0;
-    			this.idx=0;//?yishai update
+    			idx=0;
     		}
 
     	}
     	if (counterTotal != timeToShake) {
-    		handler.postDelayed(volumeIncreaseCallback, 1000);
+    		handler.postDelayed(volumeIncreaseCallback, 700);//what delay to set?
     	}
     	else {
     		counterTotal = counter = 0;
-    		clockFlag = true;
-    		this.idx=0;
+    		sleepFlag = true;
+    		idx=0;
+    		toWork=false;
     		
     		//Toast.makeText(getBaseContext(), "you are awake", Toast.LENGTH_SHORT).show();
     		PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("finish_code", "false").commit();
@@ -543,6 +553,7 @@ public class NotificationService extends Service implements SensorEventListener{
     		
     		
     	}
+    	}//toWork end
       
     }
   }
